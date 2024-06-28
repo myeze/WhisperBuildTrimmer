@@ -1,7 +1,7 @@
 import importlib.metadata
 import os
 from os import path
-from typing import BinaryIO, Union, Annotated
+from typing import BinaryIO, Union, Annotated, List
 
 import ffmpeg
 import numpy as np
@@ -73,15 +73,27 @@ async def asr(
         word_timestamps: bool = Query(default=False, description="Word level timestamps"),
         output: Union[str, None] = Query(default="txt", enum=["txt", "vtt", "srt", "tsv", "json"])
 ):
-    result = transcribe(load_audio(audio_file.file, encode), task, language, initial_prompt, vad_filter, word_timestamps, output)
+    audio_data = load_audio(audio_file.file, encode)
+    duration = len(audio_data) / SAMPLE_RATE
+    section_duration = 60 * SAMPLE_RATE  # 60 seconds
+
+    results = []
+    for i in range(0, len(audio_data), section_duration):
+        part = audio_data[i:i + section_duration]
+        result = transcribe(part, task, language, initial_prompt, vad_filter, word_timestamps, output).read()
+        section_header = f"Section {i // section_duration + 1}\n"
+        results.append(section_header + result)
+
+    combined_result = "\n".join(results)
+
     return StreamingResponse(
-    result,
-    media_type="text/plain",
-    headers={
-        'Asr-Engine': ASR_ENGINE,
-        'Content-Disposition': f'attachment; filename="{quote(audio_file.filename)}.{output}"'
-    }
-)
+        combined_result,
+        media_type="text/plain",
+        headers={
+            'Asr-Engine': ASR_ENGINE,
+            'Content-Disposition': f'attachment; filename="{quote(audio_file.filename)}.{output}"'
+        }
+    )
 
 
 @app.post("/detect-language", tags=["Endpoints"])
