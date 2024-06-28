@@ -2,6 +2,9 @@
 ![Docker Pulls](https://img.shields.io/docker/pulls/onerahmet/openai-whisper-asr-webservice.svg)
 ![Build](https://img.shields.io/github/actions/workflow/status/ahmetoner/whisper-asr-webservice/docker-publish.yml.svg)
 ![Licence](https://img.shields.io/github/license/ahmetoner/whisper-asr-webservice.svg)
+# My Changes
+For the following model, I added a change where each section transcribed 1 minute of audio, addressing the issue where longer audio files would return an error due to their length. The first section represents the first minute (0:00 - 1:00), the second section represents the following minute (1:00 - 2:00) and so on. Below is information regarding the Whisper ASR Webservice as a whole. 
+
 # Whisper ASR Webservice
 
 Whisper is a general-purpose speech recognition model. It is trained on a large dataset of diverse audio and is also a multitask model that can perform multilingual speech recognition as well as speech translation and language identification. For more details: [github.com/openai/whisper](https://github.com/openai/whisper/)
